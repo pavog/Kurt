@@ -2,6 +2,11 @@ package me.paulvogel.kurt;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,8 +16,12 @@ public class Kurt implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
     public static final Logger LOGGER = LoggerFactory.getLogger("kurt");
 
+	public static final Item BUTTER_BLOCK = new Item(new FabricItemSettings());
+
 	@Override
 	public void onInitialize() {
+		Registry.register(Registries.ITEM, new Identifier("kurt", "butter_block"), BUTTER_BLOCK);
+
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
