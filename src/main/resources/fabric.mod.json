@@ -1,31 +1,31 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "kurt",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Kurt",
+	"description": "This mod is an addon for Create Fabric. It adds the Buttergolem.",
 	"authors": [
-		"Me!"
+		"Pavog"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://paulvogel.me",
+		"sources": "https://github.com/pavog/Kurt"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"license": "MIT",
+	"icon": "assets/kurt/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
+			"me.paulvogel.kurt.Kurt"
 		],
 		"client": [
-			"com.example.ExampleModClient"
+			"me.paulvogel.kurt.KurtClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
+		"kurt.mixins.json",
 		{
-			"config": "modid.client.mixins.json",
+			"config": "kurt.client.mixins.json",
 			"environment": "client"
 		}
 	],
@@ -35,7 +35,5 @@
 		"java": ">=17",
 		"fabric-api": "*"
 	},
-	"suggests": {
-		"another-mod": "*"
-	}
+	"suggests": {}
 }

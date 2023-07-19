@@ -22,7 +22,7 @@ loom {
     splitEnvironmentSourceSets()
 
 	mods {
-		"modid" {
+		"kurt" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
