@@ -1,7 +1,28 @@
 {
   "variants": {
-    "": {
-      "model": "kurt:block/butter_puddle"
+    "layers=1": {
+      "model": "kurt:block/butter_puddle_height2"
+    },
+    "layers=2": {
+      "model": "kurt:block/butter_puddle_height4"
+    },
+    "layers=3": {
+      "model": "kurt:block/butter_puddle_height6"
+    },
+    "layers=4": {
+      "model": "kurt:block/butter_puddle_height8"
+    },
+    "layers=5": {
+      "model": "kurt:block/butter_puddle_height10"
+    },
+    "layers=6": {
+      "model": "kurt:block/butter_puddle_height12"
+    },
+    "layers=7": {
+      "model": "kurt:block/butter_puddle_height14"
+    },
+    "layers=8": {
+      "model": "kurt:block/butter_block"
     }
   }
 }

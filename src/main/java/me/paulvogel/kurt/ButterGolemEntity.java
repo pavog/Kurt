@@ -18,6 +18,7 @@ import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -28,14 +29,12 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class ButterGolemEntity extends GolemEntity implements Shearable, RangedAttackMob {
     private static final TrackedData<Byte> BUTTER_GOLEM_FLAGS;
     private static final byte HAS_PUMPKIN_FLAG = 16;
-    private static final float EYE_HEIGHT = 1.7F;
 
     public ButterGolemEntity(EntityType<? extends ButterGolemEntity> entityType, World world) {
         super(entityType, world);
@@ -50,7 +49,9 @@ public class ButterGolemEntity extends GolemEntity implements Shearable, RangedA
     }
 
     public static DefaultAttributeContainer.Builder createButterGolemAttributes() {
-        return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 4.0).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.20000000298023224);
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 10.0)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.2f);
     }
 
     protected void initDataTracker() {
@@ -77,38 +78,34 @@ public class ButterGolemEntity extends GolemEntity implements Shearable, RangedA
 
     public void tickMovement() {
         super.tickMovement();
-        if (!this.world.isClient) {
-            int i = MathHelper.floor(this.getX());
-            int j = MathHelper.floor(this.getY());
-            int k = MathHelper.floor(this.getZ());
-            BlockPos blockPos = new BlockPos(i, j, k);
-            Biome biome = (Biome) this.world.getBiome(blockPos).value();
-            if (biome.isHot(blockPos)) {
-                this.damage(DamageSource.ON_FIRE, 1.0F);
+        if (!this.getWorld().isClient) {
+            if (this.getWorld().getBiome(this.getBlockPos()).isIn(BiomeTags.SNOW_GOLEM_MELTS)) {
+                this.damage(this.getDamageSources().onFire(), 1.0f);
             }
 
-            if (!this.world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
+            if (!this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
                 return;
             }
 
             BlockState blockState = Kurt.BUTTER_PUDDLE.getDefaultState();
 
-            for (int l = 0; l < 4; ++l) {
-                i = MathHelper.floor(this.getX() + (double) ((float) (l % 2 * 2 - 1) * 0.25F));
-                j = MathHelper.floor(this.getY());
-                k = MathHelper.floor(this.getZ() + (double) ((float) (l / 2 % 2 * 2 - 1) * 0.25F));
-                BlockPos blockPos2 = new BlockPos(i, j, k);
-                if (this.world.getBlockState(blockPos2).isAir() && blockState.canPlaceAt(this.world, blockPos2)) {
-                    this.world.setBlockState(blockPos2, blockState);
-                    this.world.emitGameEvent(GameEvent.BLOCK_PLACE, blockPos2, GameEvent.Emitter.of(this, blockState));
+            for (int i = 0; i < 4; ++i) {
+                int j = MathHelper.floor(this.getX() + (double) ((float) (i % 2 * 2 - 1) * 0.25f));
+                int k = MathHelper.floor(this.getY());
+                int l = MathHelper.floor(this.getZ() + (double) ((float) (i / 2 % 2 * 2 - 1) * 0.25f));
+                BlockPos blockPos = new BlockPos(j, k, l);
+                if (!this.getWorld().getBlockState(blockPos).isAir() || !blockState.canPlaceAt(this.getWorld(), blockPos)) {
+                    continue;
                 }
+                this.getWorld().setBlockState(blockPos, blockState);
+                this.getWorld().emitGameEvent(GameEvent.BLOCK_PLACE, blockPos, GameEvent.Emitter.of(this, blockState));
             }
         }
 
     }
 
-    public void attack(LivingEntity target, float pullProgress) {
-        SnowballEntity snowballEntity = new SnowballEntity(this.world, this);
+    public void shootAt(LivingEntity target, float pullProgress) {
+        SnowballEntity snowballEntity = new SnowballEntity(this.getWorld(), this);
         double d = target.getEyeY() - 1.100000023841858;
         double e = target.getX() - this.getX();
         double f = d - snowballEntity.getY();
@@ -116,7 +113,7 @@ public class ButterGolemEntity extends GolemEntity implements Shearable, RangedA
         double h = Math.sqrt(e * e + g * g) * 0.20000000298023224;
         snowballEntity.setVelocity(e, f + h, g, 1.6F, 12.0F);
         this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-        this.world.spawnEntity(snowballEntity);
+        this.getWorld().spawnEntity(snowballEntity);
     }
 
     protected float getActiveEyeHeight(EntityPose pose, EntityDimensions dimensions) {
@@ -128,21 +125,21 @@ public class ButterGolemEntity extends GolemEntity implements Shearable, RangedA
         if (itemStack.isOf(Items.SHEARS) && this.isShearable()) {
             this.sheared(SoundCategory.PLAYERS);
             this.emitGameEvent(GameEvent.SHEAR, player);
-            if (!this.world.isClient) {
+            if (!this.getWorld().isClient) {
                 itemStack.damage(1, player, (playerx) -> {
                     playerx.sendToolBreakStatus(hand);
                 });
             }
 
-            return ActionResult.success(this.world.isClient);
+            return ActionResult.success(this.getWorld().isClient);
         } else {
             return ActionResult.PASS;
         }
     }
 
     public void sheared(SoundCategory shearedSoundCategory) {
-        this.world.playSoundFromEntity((PlayerEntity) null, this, SoundEvents.ENTITY_SNOW_GOLEM_SHEAR, shearedSoundCategory, 1.0F, 1.0F);
-        if (!this.world.isClient()) {
+        this.getWorld().playSoundFromEntity( null, this, SoundEvents.ENTITY_SNOW_GOLEM_SHEAR, shearedSoundCategory, 1.0F, 1.0F);
+        if (!this.getWorld().isClient()) {
             this.setHasPumpkin(false);
             this.dropStack(new ItemStack(Items.CARVED_PUMPKIN), 1.7F);
         }
@@ -154,11 +151,11 @@ public class ButterGolemEntity extends GolemEntity implements Shearable, RangedA
     }
 
     public boolean hasPumpkin() {
-        return ((Byte) this.dataTracker.get(BUTTER_GOLEM_FLAGS) & 16) != 0;
+        return (this.dataTracker.get(BUTTER_GOLEM_FLAGS) & 16) != 0;
     }
 
     public void setHasPumpkin(boolean hasPumpkin) {
-        byte b = (Byte) this.dataTracker.get(BUTTER_GOLEM_FLAGS);
+        byte b = this.dataTracker.get(BUTTER_GOLEM_FLAGS);
         if (hasPumpkin) {
             this.dataTracker.set(BUTTER_GOLEM_FLAGS, (byte) (b | 16));
         } else {

@@ -3,12 +3,11 @@ package me.paulvogel.kurt;
 import net.minecraft.block.*;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
@@ -22,19 +21,30 @@ import org.jetbrains.annotations.Nullable;
 
 public class ButterPuddleBlock extends Block {
     public static final int MAX_LAYERS = 8;
-    public static final IntProperty LAYERS;
-    protected static final VoxelShape[] LAYERS_TO_SHAPE;
+    public static final IntProperty LAYERS = Properties.LAYERS;
+    protected static final VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[]{
+            VoxelShapes.empty(),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 4.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 6.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 8.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 10.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 14.0, 16.0),
+            Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 16.0)
+    };
+
     public static final int field_31248 = 5;
 
     public ButterPuddleBlock(AbstractBlock.Settings settings) {
         super(settings);
-        this.setDefaultState((BlockState)((BlockState)this.stateManager.getDefaultState()).with(LAYERS, 1));
+        this.setDefaultState(this.stateManager.getDefaultState().with(LAYERS, 1));
     }
 
     public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
         switch (type) {
             case LAND:
-                return (Integer)state.get(LAYERS) < 5;
+                return state.get(LAYERS) < 5;
             case WATER:
                 return false;
             case AIR:
@@ -45,19 +55,19 @@ public class ButterPuddleBlock extends Block {
     }
 
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return LAYERS_TO_SHAPE[(Integer)state.get(LAYERS)];
+        return LAYERS_TO_SHAPE[state.get(LAYERS)];
     }
 
     public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return LAYERS_TO_SHAPE[(Integer)state.get(LAYERS) - 1];
+        return LAYERS_TO_SHAPE[state.get(LAYERS) - 1];
     }
 
     public VoxelShape getSidesShape(BlockState state, BlockView world, BlockPos pos) {
-        return LAYERS_TO_SHAPE[(Integer)state.get(LAYERS)];
+        return LAYERS_TO_SHAPE[state.get(LAYERS)];
     }
 
     public VoxelShape getCameraCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return LAYERS_TO_SHAPE[(Integer)state.get(LAYERS)];
+        return LAYERS_TO_SHAPE[state.get(LAYERS)];
     }
 
     public boolean hasSidedTransparency(BlockState state) {
@@ -65,7 +75,7 @@ public class ButterPuddleBlock extends Block {
     }
 
     public float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
-        return (Integer)state.get(LAYERS) == 8 ? 0.2F : 1.0F;
+        return state.get(LAYERS) == 8 ? 0.2F : 1.0F;
     }
 
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
@@ -75,7 +85,9 @@ public class ButterPuddleBlock extends Block {
         } else if (blockState.isIn(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON)) {
             return true;
         } else {
-            return Block.isFaceFullSquare(blockState.getCollisionShape(world, pos.down()), Direction.UP) || blockState.isOf(this) && (Integer)blockState.get(LAYERS) == 8;
+            return Block.isFaceFullSquare(blockState.getCollisionShape(world, pos.down()), Direction.UP)
+                    || blockState.isOf(this)
+                    && blockState.get(LAYERS) == 8;
         }
     }
 
@@ -92,7 +104,7 @@ public class ButterPuddleBlock extends Block {
     }
 
     public boolean canReplace(BlockState state, ItemPlacementContext context) {
-        int i = (Integer)state.get(LAYERS);
+        int i = state.get(LAYERS);
         if (context.getStack().isOf(this.asItem()) && i < 8) {
             if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
@@ -108,19 +120,15 @@ public class ButterPuddleBlock extends Block {
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         BlockState blockState = ctx.getWorld().getBlockState(ctx.getBlockPos());
         if (blockState.isOf(this)) {
-            int i = (Integer)blockState.get(LAYERS);
-            return (BlockState)blockState.with(LAYERS, Math.min(8, i + 1));
+            int i = blockState.get(LAYERS);
+            return blockState.with(LAYERS, Math.min(8, i + 1));
         } else {
             return super.getPlacementState(ctx);
         }
     }
 
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(new Property[]{LAYERS});
+        builder.add(LAYERS);
     }
 
-    static {
-        LAYERS = Properties.LAYERS;
-        LAYERS_TO_SHAPE = new VoxelShape[]{VoxelShapes.empty(), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 4.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 6.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 8.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 10.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 14.0, 16.0), Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 16.0)};
-    }
 }
