@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/snow_height2",
+  "textures": {
+    "particle": "kurt:block/butter_puddle",
+    "top": "kurt:block/butter_puddle",
+    "bottom": "kurt:block/butter_puddle",
+    "side": "kurt:block/butter_puddle",
+    "all": "kurt:block/butter_puddle",
+    "": "kurt:block/butter_puddle"
+  }
+}

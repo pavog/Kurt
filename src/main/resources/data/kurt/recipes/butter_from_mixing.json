@@ -1,0 +1,16 @@
+{
+  "type": "create:mixing",
+  "heatRequirement": "none",
+  "ingredients": [
+    {
+      "amount": 27000,
+      "fluidTag": "c:milk"
+    }
+  ],
+  "results": [
+    {
+      "count": 1,
+      "item": "kurt:butter"
+    }
+  ]
+}

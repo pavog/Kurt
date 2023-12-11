@@ -3,7 +3,8 @@
 	"package": "me.paulvogel.kurt.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"KurtMixin"
+		"KurtMixin",
+		"BlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
